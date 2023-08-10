@@ -1,36 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   time.c                                             :+:      :+:    :+:   */
+/*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ynguyen <ynguyen@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/01 11:53:07 by ynguyen           #+#    #+#             */
-/*   Updated: 2023/08/05 15:13:35 by ynguyen          ###   ########.fr       */
+/*   Created: 2023/08/01 11:56:16 by ynguyen           #+#    #+#             */
+/*   Updated: 2023/08/02 18:33:36 by ynguyen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long long	time_stamp(void)
+int	ft_deathhh(t_data *d, int i)
 {
-	struct timeval	real_time;
-	long long		time;
-
-	gettimeofday(&real_time, NULL);
-	time = real_time.tv_sec * 1000 + real_time.tv_usec / 1000;
-	return (time);
+	pthread_mutex_lock(&d->mutex_dead);
+	if (i)
+		d->dead = 1;
+	if (d->dead)
+	{
+		pthread_mutex_unlock(&d->mutex_dead);
+		return (1);
+	}
+	pthread_mutex_unlock(&d->mutex_dead);
+	return (0);
 }
 
-void	philo_time(t_data *d, long long time)
+int	free_init(pthread_mutex_t *a)
 {
-	long long	start;
-
-	start = time_stamp();
-	while (time_stamp() - start < time)
-	{
-		if (ft_deathhh(d, 0))
-			return ;
-		usleep(10);
-	}
+	if (a)
+		free(a);
+	return (1);
 }

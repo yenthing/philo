@@ -1,86 +1,77 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ynguyen <ynguyen@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/08/01 11:53:12 by ynguyen           #+#    #+#             */
+/*   Updated: 2023/08/04 10:59:48 by ynguyen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-int	ft_atoi(const char *nptr)
+int	ft_strlen(char *str)
 {
-	int	sign;
 	int	i;
-	int	value;
 
-	sign = 1;
+	if (str == NULL)
+		return (0);
+	i = 0;
+	while (str[i])
+		i++;
+	return (i);
+}
+
+long	ft_atoi(const char *nb)
+{
+	int		i;
+	long	value;
+
 	value = 0;
 	i = 0;
-	while (nptr[i] == 32 || (nptr[i] > 8 && nptr[i] < 14))
+	while (nb[i] == 32 || (nb[i] > 8 && nb[i] < 14))
 		i++;
-	if (nptr[i] == 45 || nptr[i] == 43)
+	while (nb[i] > 47 && nb[i] < 58)
 	{
-		if (nptr[i] == 45)
-			sign *= -1;
+		if (value >= LONG_MAX)
+			break ;
+		value = value * 10 + (nb[i] - '0');
 		i++;
 	}
-	while (nptr[i] > 47 && nptr[i] < 58)
-	{
-		value = value * 10 + (nptr[i] - 48);
-		i++;
-	}
-	return (value * sign);
+	return (value);
 }
 
-int check_digit(char *s)
+int	ft_strcmp(char *s1, char *s2)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    if (s[0] == '-' || s[0] == '+')
-        i++;
-    if (s[i] == '-' || s[i] == '+')
-        return (1);
-    while(s[i] == '0')
-        i++;
-    if (s[i] <= '0' && s[i] >= '9')
-        return (1);
-    return (0);
+	if (!s1 || !s2)
+		return (1);
+	i = 0;
+	while (s1[i] && s2[i] && s1[i] == s2[i])
+		i++;
+	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
-int	check_limit(char *s)
+int	check_digit(char *s)
 {
 	int	i;
 
 	i = 0;
-	if (s[i] == '-' || s[i] == '+')
-		i++;
-	while (s[i] == '0')
-		i++;
-	if (ft_strlen(s + i) > 10)
-		return (1);
-	if (ft_strlen(s + i) == 10)
+	while (s[i])
 	{
-		if (s[i] > '2')
+		if (s[i] < '0' || s[i] > '9')
 			return (1);
-		if (s[i] == '2')
-		{
-			if (s[0] == '-' && ft_strcmp(s + i, "2147483648") == 0)
-				return (0);
-			if (ft_strcmp(s + i, "2147483647") > 0)
-				return (1);
-		}
+		i++;
 	}
 	return (0);
 }
 
-void	*what_calloc(size_t nmemb, size_t size)
+int	check_empty(char *s)
 {
-	void	*ptr;
-	
-	if (nmemb == 0 || size == 0)
-	{
-		ptr = malloc(1);
-		if (!ptr)
-			return (NULL);
-		return (ptr);
-	}
-	ptr = malloc(nmemb * size);
-	if (!ptr)
-		return (NULL);
-	ft_bzero(ptr, nmemb * size);
-	return (ptr);
+	if (s && s[0] == '\0')
+		return (1);
+	return (0);
 }

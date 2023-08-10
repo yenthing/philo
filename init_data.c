@@ -1,108 +1,105 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_data.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ynguyen <ynguyen@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/08/01 11:53:39 by ynguyen           #+#    #+#             */
+/*   Updated: 2023/08/05 17:22:53 by ynguyen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "philo.h"
 
-int check_variable(t_sum *data, int ac, char **av)
+int	check_variable(t_data *data)
 {
-    int i;
-
-    if (data->n_philos < 1 || data->n_philos > 200)
-    {
-        write(1, "Philosophers are not authorized!", 33);
-        return (1);
-    }
-    if (data->start_time < 0 || data->time_die < 0 || data->time_eat < 0)
-    {
-        write(1, "Time is not authorized!", 33);
-        return (1);
-    }
-    if (data->time_sleep < 0)
-    {
-        write(1, "Time is not authorized!", 33);
-        return (1);
-    }
-    i = 0;
-    while (++i < ac)
-    {
-        if (check_limit(av[i]) || check_digit(av[i]))
-            return (1);
-    }
-    return (0);
+	if (data->n_of_philos < 1 || data->n_of_philos > 200)
+		return (1);
+	if (data->start_time < 0 || data->time_die <= 0 || data->time_eat <= 0)
+		return (1);
+	if (data->time_sleep <= 0)
+		return (1);
+	return (0);
 }
 
-int   init_philors(t_sum *data)
+int	init_philors(t_data *data)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    data->struct_philos = malloc(sizeof(t_philors) * data->n_philos);
-    if (!data->struct_philos)
-        return (1);
-    data->mutex_fork = malloc(sizeof(pthread_mutex_t) * data->n_philos);
-    if (!data->mutex_fork)
-        return (1);
-    while(i < data->n_philos)
-    {
-        data->struct_philos[i].who = i + 1;
-        data->struct_philos[i].left_fork = i;
-        if (i == data->n_philos - 1)
-            data->struct_philos[0].right_fork = 0;
-        else
-            data->struct_philos[i].right_fork = i + 1;
-        data->struct_philos[i].eat_count = 0;
-        data->struct_philos[i].finish_eating = 0;
-        data->struct_philos[i].death_note = 0;
-        data->struct_philos[i].data = data;
-        i++;
-    }
-    return (0);
+	i = 0;
+	while (i < data->n_of_philos)
+	{
+		data->struct_philos[i].who = i + 1;
+		data->struct_philos[i].left_fork = i;
+		if (i == data->n_of_philos - 1)
+			data->struct_philos[i].right_fork = 0;
+		else
+			data->struct_philos[i].right_fork = i + 1;
+		data->struct_philos[i].eat_count = 0;
+		data->struct_philos[i].finish_eating = 0;
+		data->struct_philos[i].death_note = 0;
+		data->struct_philos[i].d = data;
+		i++;
+	}
+	return (0);
 }
 
-int free_init(pthread_mutex_t *a, pthread_mutex_t *b, pthread_mutex_t *c)
+int	init_mutex(t_data *data)
 {
-    if (a)
-        free(a);
-    if (b)
-        free(b);
-    if (c)
-        free(c);
-    return (1);
+	int	i;
+
+	i = 0;
+	if (pthread_mutex_init(&data->mutex_check, NULL))
+		return (1);
+	if (pthread_mutex_init(&data->mutex_print, NULL))
+		return (1);
+	if (pthread_mutex_init(&data->mutex_dead, NULL))
+		return (1);
+	while (i < data->n_of_philos)
+	{
+		if (pthread_mutex_init(&data->mutex_fork[i], NULL))
+			return (1);
+		i++;
+	}
+	return (0);
 }
 
-int    init_mutex(t_sum *data, int ac, char **av)
+int	malloc_mutex(t_data *data)
 {
-    data->mutex_fork = malloc(sizeof(pthread_mutex_t) * data->n_philos);
-    if (!data->mutex_fork)
-        return (1);
-    data->mutex_check = malloc(sizeof(pthread_mutex_t) * 1);
-    if (!data->mutex_check)
-        return (free_init(data->mutex_fork, NULL, NULL));
-    data->mutex_print = malloc(sizeof(pthread_mutex_t) * 1);
-    if (!data->mutex_print)
-        return (free_init(data->mutex_fork, data->mutex_check, NULL));
-    data->struct_philos = malloc(sizeof(t_philors) * data->n_philos);
-    if (!data->struct_philos)
-        return (free_init(data->mutex_fork, data->mutex_check, data->mutex_print));
-    return (0);
+	data->mutex_fork = malloc(sizeof(pthread_mutex_t) * data->n_of_philos);
+	if (!data->mutex_fork)
+		return (1);
+	data->struct_philos = malloc(sizeof(t_philors) * data->n_of_philos);
+	if (!data->struct_philos)
+		return (free_init(data->mutex_fork));
+	if (init_mutex(data))
+		return (free_init(data->mutex_fork));
+	return (0);
 }
 
-int init_data(t_sum *data, int ac, char **av)
+int	init_data(t_data *data, int ac, char **av)
 {
-    data->error = NULL;
-    data->dead = NULL;
-    data->full = NULL;
-    data->n_philos = ft_atoi(av[1]);
-    data->time_die = ft_atoi(av[2]);
-    data->time_eat = ft_atoi(av[3]);
-    data->time_sleep = ft_atoi(av[4]);
-    if (ac == 6)
-        data->n_times_to_eat = ft_atoi(av[5]);
-    else if (ac < 6)
-        data->n_times_to_eat = -1;
-    if (check_variable(data, ac, av) != 0)
-        return (1);
-    if (init_philors(data) != 0)
-        return (1);
-    if (init_mutex(data, ac , av) != 0)
-        return (1);
-    return (0);
+	data->dead = 0;
+	data->eat_all = 0;
+	data->start_time = 0;
+	data->n_of_philos = (int)ft_atoi(av[1]);
+	data->time_die = (int)ft_atoi(av[2]);
+	data->time_eat = (int)ft_atoi(av[3]);
+	data->time_sleep = (int)ft_atoi(av[4]);
+	if (ac == 6)
+	{
+		data->n_times_to_eat = ft_atoi(av[5]);
+		if (data->n_times_to_eat <= 0)
+			return (1);
+	}
+	else if (ac < 6)
+		data->n_times_to_eat = -1;
+	if (check_variable(data))
+		return (1);
+	if (malloc_mutex(data))
+		return (1);
+	if (init_philors(data))
+		return (1);
+	return (0);
 }

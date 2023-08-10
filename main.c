@@ -1,27 +1,61 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ynguyen <ynguyen@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/08/01 11:53:32 by ynguyen           #+#    #+#             */
+/*   Updated: 2023/08/05 14:47:52 by ynguyen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-int main(int ac, char **av)
+int	check_argument(t_data *data, int ac, char **av)
 {
-    t_sum data;
-    if (ac < 5 || ac > 6)
-    {
-        write(2, "Ups! Arguments are invalid!\n", 29);
-        return (1);
-    }
-    if (init_data(&data, ac, av))
-    {
-        ft_free(&data);
-        return (1);
-    }
-    // valerian was here hehe
-    pthread_mutex_init(data.mutex_check, NULL);
-    pthread_mutex_init(data.mutex_print, NULL);
-    if (pthread_create(&data.struct_philos, NULL, &routine, NULL) != 0)
-    {
-        write(2, "Well.. Failed to create thread\n", 32);
-        return (1);
-    }
-    if (pthread_join(&data.struct_philos, NULL) != 0)
-        return (1);
-    return (0);
+	int	i;
+
+	if (ac < 5 || ac > 6)
+	{
+		write(2, "Error\n Invalid arguments!\n", 27);
+		return (1);
+	}
+	i = 0;
+	while (++i < ac)
+	{
+		if (check_digit(av[i]) || check_empty(av[i]))
+		{
+			write(2, "Error\n Invalid variable!\n", 26);
+			return (1);
+		}
+	}
+	if (init_data(data, ac, av))
+	{
+		write(2, "Error\n Invalid arguments!\n", 27);
+		return (1);
+	}
+	return (0);
+}
+
+int	main(int ac, char **av)
+{
+	t_data	*data;
+
+	data = malloc(sizeof(t_data));
+	if (!data)
+		return (write(2, "Malloc failed, data!\n", 21), 1);
+	if (check_argument(data, ac, av))
+	{
+		free(data);
+		return (1);
+	}
+	if (thread_me(data))
+	{
+		write(2, "Error\nThread failed\n", 21);
+		free(data);
+		return (1);
+	}
+	free(data);
+	return (0);
 }
